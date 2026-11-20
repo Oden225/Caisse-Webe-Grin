@@ -251,6 +251,7 @@
       <span><i style="border:2px dashed var(--bord)"></i>Pas encore payé</span>
       <span><i style="background:var(--gris-clair)"></i>Pas encore membre</span>
     </div>
+    <p style="margin-top:16px"><button class="btn" onclick="allerA('membres'); setTimeout(() => document.getElementById('nouveau-nom').focus(), 50)">➕ Nouveau membre</button></p>
   </section>
 
   <!-- ============ MEMBRES ============ -->
@@ -261,6 +262,10 @@
         <input id="nouveau-nom" placeholder="Nom et prénom" required autocapitalize="words" autocomplete="off" enterkeyhint="done" style="flex:1; min-width:220px">
         <button class="btn plein" type="submit">➕ Ajouter</button>
       </form>
+      <div class="ligne" style="margin-top:10px">
+        <span>Il cotise à partir de</span>
+        <select id="nouveau-mois"></select><select id="nouvelle-annee"></select>
+      </div>
       <p class="aide">Astuce : vous pouvez coller une liste de noms (un nom par ligne) pour tous les ajouter en une fois.</p>
     </div>
     <div class="carte">
@@ -308,6 +313,7 @@
         <label class="champ"><span>Nom de l'association</span><input id="r-nom" placeholder="Ex : Association des jeunes du quartier"></label>
         <label class="champ"><span>Montant de la cotisation par mois</span><input id="r-montant" enterkeyhint="done" type="number" min="0" step="50" inputmode="numeric"></label>
         <label class="champ"><span>Monnaie</span><input id="r-devise" placeholder="FCFA"></label>
+        <label class="champ"><span>Numéro de dépôt (Mobile Money)</span><input id="r-depot" inputmode="tel" type="tel" placeholder="05 04 31 08 69"></label>
         <label class="champ"><span>Nom du trésorier</span><input id="r-tresorier" placeholder="Votre nom"></label>
         <button class="btn plein" type="submit">💾 Enregistrer</button>
       </form>
@@ -332,7 +338,7 @@
   <div class="choix">
     <button class="btn plein grand" id="dp-paye"></button>
     <div class="ligne">
-      <input id="dp-montant" type="number" min="0" step="50" inputmode="numeric" enterkeyhint="done" placeholder="Autre montant" style="flex:1; min-width:140px">
+      <input id="dp-montant" type="number" min="0" step="50" inputmode="numeric" enterkeyhint="done" placeholder="Autre montant (ex : 3000 = 3 mois)" style="flex:1; min-width:140px">
       <button class="btn" id="dp-autre">Valider ce montant</button>
     </div>
     <button class="btn rouge" id="dp-efface">✗ N'a pas payé</button>
@@ -364,11 +370,47 @@ const MOIS_COURANT = aujourdhui.getMonth(); // 0..11
 
 function donneesVides() {
   return {
-    asso: { nom: "", montant: 1000, devise: "FCFA", tresorier: "" },
+    asso: { nom: "", montant: 1000, devise: "FCFA", tresorier: "", depot: "" },
     membres: [],          // { id, nom, debut: "AAAA-MM" }
     paiements: {},        // "idMembre|AAAA-MM" -> montant
     derniereSauvegarde: null
   };
+}
+
+/* Liste du groupe au 01/10/2026 (dans l'ordre de la liste papier) */
+function donneesDeDepart() {
+  const d = donneesVides();
+  d.asso.nom = "Groupe Webe Grin";
+  d.asso.depot = "05 04 31 08 69";
+  const liste = [
+    ["SEGNON KOFFI", 1000],
+    ["OUATTARA TAFENEGNINRI (Ahmed)", 0],
+    ["KARIDIOULA LOGOFO LOUIS", 1000],
+    ["OUATTARA ABOU (boucher)", 0],
+    ["TOURE SOULEYMANE", 0],
+    ["FOFANA ADAMA", 0],
+    ["COULIBALY GBOROGBE", 0],
+    ["COULIBALY LAMISSA", 0],
+    ["OUATTARA ABOU (chauffeur)", 0],
+    ["SEGNON LOUANGNIGUI", 3000],
+    ["FOFANA YAH (la mère)", 2000],
+    ["SORO GBARAMAN", 0],
+    ["OUATTARA JUSTIN", 0],
+    ["FATOU (SEWADJO)", 1000],
+    ["TOURE GNIBIOSSE", 0]
+  ];
+  liste.forEach(([nom, verse], i) => {
+    const id = "m" + String(i + 1).padStart(2, "0");
+    d.membres.push({ id, nom, debut: "2026-10" });
+    // Les versements de la liste sont comptés à partir d'octobre 2026 (1 000 F par mois)
+    let reste = verse, x = 2026 * 12 + 9;
+    while (reste > 0) {
+      const part = Math.min(1000, reste);
+      d.paiements[id + "|" + Math.floor(x / 12) + "-" + String(x % 12 + 1).padStart(2, "0")] = part;
+      reste -= part; x++;
+    }
+  });
+  return d;
 }
 let D = charger();
 
@@ -377,7 +419,7 @@ function charger() {
     const brut = localStorage.getItem(CLE);
     if (brut) return Object.assign(donneesVides(), JSON.parse(brut));
   } catch (e) { /* stockage indisponible */ }
-  return donneesVides();
+  return donneesDeDepart();
 }
 function enregistrer() {
   try { localStorage.setItem(CLE, JSON.stringify(D)); }
@@ -399,7 +441,7 @@ function echapper(s) {
 function nomAsso() { return D.asso.nom.trim() || "Notre association"; }
 function paye(idM, cle) { return Number(D.paiements[idM + "|" + cle]) || 0; }
 function estMembreA(m, cle) { return !m.debut || cle >= m.debut; }
-function membresTries() { return [...D.membres].sort((a, b) => a.nom.localeCompare(b.nom, "fr")); }
+function membresTries() { return [...D.membres]; } // ordre de la liste : les nouveaux à la fin
 function toast(msg) {
   const t = $("#toast"); t.textContent = msg; t.classList.add("visible");
   clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("visible"), 2200);
@@ -451,6 +493,7 @@ function pageActive() {
 function afficherEntete() {
   $("#titre-asso").textContent = D.asso.nom.trim() || "Caisse de l'association";
   $("#sous-titre").textContent = "Cotisation : " + argent(montantMois()) + " par mois" +
+    (D.asso.depot ? " · Dépôt : " + D.asso.depot : "") +
     (D.asso.tresorier ? " · Trésorier : " + D.asso.tresorier : "");
   document.title = (D.asso.nom.trim() || "Caisse") + " – Cotisations";
 }
@@ -575,8 +618,30 @@ $("#dp-efface").onclick = () => fixerPaiement(0);
 $("#dp-autre").onclick = () => {
   const v = Number($("#dp-montant").value);
   if (!v || v < 0) { $("#dp-montant").focus(); return; }
-  fixerPaiement(v);
+  const m = montantMois();
+  if (m > 0 && v > m) repartir(v); else fixerPaiement(v);
 };
+/* Plus que la cotisation : on remplit ce mois puis les suivants (paiement d'avance) */
+function repartir(v) {
+  const { id, cle } = paiementEnCours;
+  const m = montantMois();
+  const [a, mo] = cle.split("-").map(Number);
+  let x = a * 12 + mo - 1, reste = v, premier = null, dernier = null, n = 0;
+  delete D.paiements[id + "|" + cle];
+  for (let k = 0; reste > 0 && k < 36; k++, x++) {
+    const c = cleMois(Math.floor(x / 12), x % 12), deja = paye(id, c);
+    if (deja >= m) continue;
+    const part = Math.min(m - deja, reste);
+    D.paiements[id + "|" + c] = deja + part;
+    reste -= part; n++;
+    premier = premier || x; dernier = x;
+  }
+  if (reste > 0) { const c = cleMois(Math.floor(dernier / 12), dernier % 12); D.paiements[id + "|" + c] += reste; }
+  enregistrer();
+  $("#dlg-paiement").close();
+  afficherGrille();
+  toast(argent(v) + " = " + n + " mois payés (" + MOIS[premier % 12].toLowerCase() + " à " + MOIS[dernier % 12].toLowerCase() + ")");
+}
 $("#dp-montant").addEventListener("keydown", e => { if (e.key === "Enter") $("#dp-autre").click(); });
 $("#dp-annuler").onclick = () => $("#dlg-paiement").close();
 
@@ -585,7 +650,7 @@ $("#form-membre").addEventListener("submit", e => {
   e.preventDefault();
   const noms = $("#nouveau-nom").value.split(/\r?\n|;/).map(s => s.trim()).filter(Boolean);
   if (!noms.length) return;
-  const debut = cleMois(ANNEE_COURANTE, 0);
+  const debut = cleMois(Number($("#nouvelle-annee").value), Number($("#nouveau-mois").value));
   noms.forEach(nom => D.membres.push({ id: "m" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), nom, debut }));
   enregistrer();
   $("#nouveau-nom").value = "";
@@ -602,15 +667,21 @@ $("#nouveau-nom").addEventListener("paste", e => {
   }
 });
 
+function remplirNouveauMembre() {
+  $("#nouveau-mois").innerHTML = MOIS.map((n, i) => `<option value="${i}" ${i === MOIS_COURANT ? "selected" : ""}>${n}</option>`).join("");
+  let ans = "";
+  for (let y = ANNEE_COURANTE - 2; y <= ANNEE_COURANTE + 1; y++) ans += `<option ${y === ANNEE_COURANTE ? "selected" : ""}>${y}</option>`;
+  $("#nouvelle-annee").innerHTML = ans;
+}
 function afficherMembres() {
   const membres = membresTries();
   $("#nb-membres").textContent = membres.length;
   const ul = $("#liste-membres");
   if (!membres.length) { ul.innerHTML = '<li class="vide" style="justify-content:center">Ajoutez votre premier membre ci-dessus.</li>'; return; }
-  ul.innerHTML = membres.map(mb => {
+  ul.innerHTML = membres.map((mb, i) => {
     const [a, mo] = (mb.debut || "").split("-");
     const depuis = mb.debut ? "Cotise depuis " + MOIS[Number(mo) - 1].toLowerCase() + " " + a : "";
-    return `<li><span class="n">${echapper(mb.nom)}<small>${depuis}</small></span>
+    return `<li><span class="n">${i + 1}. ${echapper(mb.nom)}<small>${depuis}</small></span>
       <button class="btn petit" data-act="renommer" data-id="${mb.id}">✏️ Modifier</button>
       <button class="btn petit" data-act="debut" data-id="${mb.id}">📅 Date d'entrée</button>
       <button class="btn petit rouge" data-act="supprimer" data-id="${mb.id}">🗑️ Retirer</button></li>`;
@@ -726,7 +797,7 @@ function afficherBilan() {
   const z = $("#apercu-bilan");
   if (!b.lignes.length) { z.innerHTML = '<p class="vide">Ajoutez des membres pour voir le bilan.</p>'; return; }
   let h = `<h2 style="margin-bottom:2px">${echapper(nomAsso())} — Point des cotisations</h2>
-    <p class="aide" style="margin-top:0">Période : <strong>${b.libelle}</strong> · Cotisation : ${argent(montantMois())} par mois · Établi le ${dateDuJour()}${D.asso.tresorier ? " par " + echapper(D.asso.tresorier) + " (trésorier)" : ""}</p>
+    <p class="aide" style="margin-top:0">Période : <strong>${b.libelle}</strong> · Cotisation : ${argent(montantMois())} par mois${D.asso.depot ? " · Dépôt : " + echapper(D.asso.depot) : ""} · Établi le ${dateDuJour()}${D.asso.tresorier ? " par " + echapper(D.asso.tresorier) + " (trésorier)" : ""}</p>
     <div class="chiffres">
       <div class="chiffre ok"><div class="lib">Argent reçu</div><div class="val">${argent(b.total)}</div></div>
       <div class="chiffre"><div class="lib">Argent attendu</div><div class="val">${argent(b.attendu)}</div><div class="barre"><div style="width:${b.pct}%"></div></div></div>
@@ -772,7 +843,7 @@ function creerPDF() {
   doc.text("Point des cotisations - " + b.libelle, 14, 19);
 
   doc.setTextColor(60); doc.setFontSize(9.5);
-  doc.text("Cotisation : " + argent(montantMois()) + " par mois   |   Établi le " + dateDuJour() +
+  doc.text("Cotisation : " + argent(montantMois()) + " par mois" + (D.asso.depot ? "   |   Dépôt : " + D.asso.depot : "") + "   |   Établi le " + dateDuJour() +
     (D.asso.tresorier ? " par " + D.asso.tresorier + " (trésorier)" : ""), 14, 33);
 
   // Encadrés chiffrés
@@ -877,7 +948,7 @@ body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; }
 <body><div class="Section1">
 <h1 style="color:#1f6f43;font-size:18pt;margin:0">${echapper(nomAsso())}</h1>
 <h2 style="font-size:13pt;margin:4pt 0 8pt">Point des cotisations — ${b.libelle}</h2>
-<p style="color:#555">Cotisation : ${argent(montantMois())} par mois · Établi le ${dateDuJour()}${D.asso.tresorier ? " par " + echapper(D.asso.tresorier) + " (trésorier)" : ""}</p>
+<p style="color:#555">Cotisation : ${argent(montantMois())} par mois${D.asso.depot ? " · Dépôt : " + echapper(D.asso.depot) : ""} · Établi le ${dateDuJour()}${D.asso.tresorier ? " par " + echapper(D.asso.tresorier) + " (trésorier)" : ""}</p>
 <table style="border-collapse:collapse;margin-bottom:10pt"><tr>
 <td style="border:1px solid #c8ccd2;padding:6pt 10pt">Argent reçu<br><b style="font-size:13pt;color:#1f6f43">${argent(b.total)}</b></td>
 <td style="border:1px solid #c8ccd2;padding:6pt 10pt">Argent attendu<br><b style="font-size:13pt">${argent(b.attendu)}</b></td>
@@ -899,6 +970,7 @@ function creerMessage() {
   s += `📌 Reste à encaisser : ${argent(b.reste)}\n\n`;
   if (b.aJour.length) s += `✅ *À jour (${b.aJour.length})* : ${b.aJour.map(l => l.nom).join(", ")}\n\n`;
   if (b.enRetard.length) s += `⏳ *Reste à payer (${b.enRetard.length})* :\n` + b.enRetard.map(l => `• ${l.nom} : ${argent(l.reste)}`).join("\n") + "\n\n";
+  if (D.asso.depot) s += `📲 Numéro de dépôt : ${D.asso.depot}\n\n`;
   s += `Merci à tous 🙏` + (D.asso.tresorier ? `\n${D.asso.tresorier}, trésorier` : "");
   return s;
 }
@@ -961,6 +1033,7 @@ function afficherReglages() {
   $("#r-montant").value = D.asso.montant;
   $("#r-devise").value = D.asso.devise;
   $("#r-tresorier").value = D.asso.tresorier;
+  $("#r-depot").value = D.asso.depot || "";
   $("#derniere-sauvegarde").textContent = D.derniereSauvegarde
     ? "Dernière copie : " + new Date(D.derniereSauvegarde).toLocaleDateString("fr-FR")
     : "Aucune copie faite pour le moment.";
@@ -971,6 +1044,7 @@ $("#form-reglages").addEventListener("submit", e => {
   D.asso.montant = Math.max(0, Number($("#r-montant").value) || 0);
   D.asso.devise = $("#r-devise").value.trim() || "FCFA";
   D.asso.tresorier = $("#r-tresorier").value.trim();
+  D.asso.depot = $("#r-depot").value.trim();
   enregistrer(); afficherEntete(); toast("Réglages enregistrés ✓");
   if (!D.membres.length) setTimeout(() => allerA("membres"), 600);
 });
@@ -1022,18 +1096,17 @@ function rafraichir() {
   if (p === "reglages") afficherReglages();
 }
 remplirSelects();
-// Premier lancement : on commence par les réglages
-if (!D.asso.nom && !D.membres.length) {
-  allerA("reglages");
+remplirNouveauMembre();
+// Premier lancement : petit mot d'accueil, une seule fois
+rafraichir();
+if (!D.bienvenueVue) {
   fenetre("Bienvenue 👋",
-    `<p>Cet outil vous aide à suivre les cotisations de l'association.</p>
-     <ol><li>Écrivez le <strong>nom de l'association</strong> et le <strong>montant</strong> par mois.</li>
-     <li>Ajoutez les <strong>membres</strong>.</li>
-     <li>Chaque mois, cliquez sur la case de ceux qui ont payé.</li>
-     <li>Dans <strong>Bilan &amp; Partager</strong>, envoyez le point au groupe WhatsApp.</li></ol>`,
-    [{ texte: "C'est parti", classe: "plein" }]);
-} else {
-  rafraichir();
+    `<p>Les <strong>${D.membres.length} membres</strong> du groupe sont déjà enregistrés, avec les versements de la liste du 1er octobre 2026.</p>
+     <ol><li>Chaque mois, touchez la case d'un membre quand il a payé.</li>
+     <li>Un nouveau membre ? Onglet <strong>Membres</strong>, puis « Ajouter ».</li>
+     <li>Dans <strong>Bilan &amp; Partager</strong>, envoyez le point au groupe WhatsApp.</li></ol>
+     <p class="aide">Pensez à écrire votre nom de trésorier dans <strong>Réglages</strong>.</p>`,
+    [{ texte: "C'est parti", classe: "plein", action: () => { D.bienvenueVue = true; enregistrer(); } }]);
 }
 </script>
 </body>
