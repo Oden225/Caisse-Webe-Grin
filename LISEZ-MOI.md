@@ -1,32 +1,46 @@
-# Caisse de l'association : suivi des cotisations
+# Ma Cotisation
 
-Un outil simple pour le trésorier : on coche qui a payé chaque mois, puis on envoie le point au groupe WhatsApp en PDF, en Word ou en simple message.
+Application de suivi des cotisations mensuelles du **Groupe Webe Grin**, construite d'après le cahier de conception *Ma Cotisation — System Design & UX/UI*.
 
-## Installation (une seule fois)
+Elle fonctionne sur téléphone Android (installable comme une application) et sur ordinateur, sans connexion Internet. Les données restent sur l'appareil.
 
-1. Copier le dossier complet (`index.html` **et** le dossier `lib`) sur l'ordinateur, par exemple sur le Bureau.
-2. Double-cliquer sur `index.html` : l'outil s'ouvre dans le navigateur (Chrome ou Edge conseillés).
-3. Clic droit sur l'onglet, puis « Ajouter aux favoris », pour le retrouver facilement.
+## Installer
 
-Pas besoin d'internet pour s'en servir, sauf pour ouvrir WhatsApp.
+**Sur Android** (recommandé) : une fois le dossier publié sur un site (par exemple GitHub Pages), ouvrir le lien dans Chrome, puis menu ⋮ → **Ajouter à l'écran d'accueil** / **Installer l'application**. L'icône « Cotisation » apparaît avec les autres applications et fonctionne ensuite hors connexion.
 
-## Utilisation
+**Sur ordinateur** : copier tout le dossier puis double-cliquer sur `index.html` (Chrome ou Edge).
 
-| Onglet | À quoi ça sert |
+## Les écrans
+
+| Onglet | Rôle |
 |---|---|
-| ⚙️ **Réglages** | Nom de l'association, montant par mois (1 000 FCFA par défaut), nom du trésorier, copie de sauvegarde |
-| 👥 **Membres** | Ajouter, renommer ou retirer un membre, et choisir à partir de quel mois il cotise |
-| ✅ **Cotisations** | Un tableau par année. On clique sur une case puis sur « A payé 1 000 FCFA ». Cliquer sur le nom d'un mois coche tout le monde d'un coup |
-| 📤 **Bilan & Partager** | Choisir une période (ce mois, 3 derniers mois, l'année, ou de tel mois à tel mois), puis partager |
+| **Accueil** | Situation du mois : qui a payé, argent reçu, reste à collecter, membres en retard, dernières opérations, gros bouton **Enregistrer un paiement** |
+| **Membres** | Recherche, filtres Tous / À jour / En retard / Archivés, ajout d'un membre, fiche détaillée (total versé, mois réglés, mois dus, historique) |
+| **Paiements** | Suivi mois par mois (consultation seulement) : payés, non payés, taux de recouvrement |
+| **Rapports** | Rapport d'un mois ou d'une période, résumé ou détaillé, partagé en **PDF** ou **Word (.docx)** via le menu de partage (WhatsApp), message texte, impression |
+| ⚙️ Paramètres | Association, montant, numéro de dépôt, début du suivi, sauvegarde/restauration, code PIN, historique des modifications, aide |
 
-### Partager dans le groupe WhatsApp
+## Règles appliquées
 
-- **📄 Partager en PDF** / **📝 Partager en Word** : sur téléphone, ou sur un ordinateur où l'application WhatsApp est installée, la fenêtre de partage s'ouvre directement. Sinon, le fichier va dans le dossier **Téléchargements**, et l'outil explique comment le joindre dans WhatsApp (trombone 📎, puis Document).
-- **💬 Envoyer un message WhatsApp** : ouvre WhatsApp avec un résumé déjà écrit (montant reçu, qui est à jour, qui doit combien). Il reste juste à choisir le groupe.
-- **🖨️ Imprimer sur papier** : imprime le tableau du bilan.
+- Cotisation de 1 000 FCFA par mois (modifiable ; un changement s'applique à partir du mois en cours).
+- Un paiement couvre un ou plusieurs mois choisis explicitement ; les mois en retard sont proposés en premier. 3 000 F = 3 mois distincts liés au même versement.
+- La date de réception de l'argent est enregistrée séparément des mois couverts.
+- Impossible de payer deux fois le même mois pour le même membre.
+- Une erreur se corrige en **annulant** le paiement avec un motif : il reste visible, barré, dans l'historique. Rien n'est effacé en silence.
+- Un membre qui part est **archivé**, pas supprimé : son historique est conservé.
+- Paiements partiels : non gérés dans cette version (une mensualité = le montant complet).
+- Les montants affichés sont ceux des cotisations ; ce n'est pas le solde de la caisse.
 
-## Important : la sauvegarde
+## Sauvegarde
 
-Les informations sont gardées **dans le navigateur de cet ordinateur**. Une fois par mois, aller dans **Réglages**, puis cliquer sur **Faire une copie de sauvegarde**, et garder le fichier (clé USB, ou l'envoyer à soi-même sur WhatsApp). En cas de panne ou de changement d'ordinateur, il suffit de faire **Reprendre une copie**.
+Paramètres → **Faire une copie** (une fois par mois). Sur Android, la copie peut être envoyée sur WhatsApp ou Google Drive. Pour la récupérer : **Reprendre une copie**. Sans copie, une désinstallation ou une panne fait perdre les données.
 
-⚠️ Ne pas « effacer les données de navigation » du navigateur sans avoir fait une copie avant.
+## Fichiers
+
+- `index.html`, `css/app.css` : l'interface
+- `js/donnees.js` : données et règles (membres, versements, affectations mensuelles, journal)
+- `js/rapports.js` : rapports PDF / Word / message et partage
+- `js/docx.js` : création des fichiers Word sans dépendance
+- `js/app.js` : écrans et navigation
+- `lib/` : jsPDF (création des PDF)
+- `manifest.webmanifest`, `sw.js`, `icones/` : installation sur Android et fonctionnement hors connexion
