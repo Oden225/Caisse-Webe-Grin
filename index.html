@@ -2,7 +2,8 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="color-scheme" content="light">
 <title>Caisse de l'association</title>
 <meta name="theme-color" content="#1f6f43">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💰</text></svg>">
@@ -22,28 +23,60 @@
     --fond: #f7f8f5;
   }
   * { box-sizing: border-box; }
+  :root { --ease-out: cubic-bezier(0.23, 1, 0.32, 1); }
+  html {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+  }
+  input, select, textarea { font-size: max(16px, 1rem) !important; }
+  button, a, [role="button"], th.mois {
+    touch-action: manipulation;
+    user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+  }
+  /* Retour immédiat au toucher (tous les appareils) */
+  .btn, button.case, nav.onglets button {
+    transition: transform 120ms var(--ease-out), background-color 120ms ease, border-color 120ms ease;
+  }
+  .btn:active, button.case:not(.hors):active, nav.onglets button:active { transform: scale(0.97); }
+  .btn:active { background: var(--vert-clair); }
+  .btn.plein:active { background: var(--vert-fonce); }
+  .btn.rouge:active { background: var(--rouge-clair); }
+  .btn.whatsapp:active { background: #1ebe5a; }
+  th.mois:active { background: var(--vert-clair); }
+  /* Survol : seulement avec une vraie souris */
+  @media (hover: hover) and (pointer: fine) {
+    .btn:hover { background: var(--vert-clair); }
+    .btn.plein:hover { background: var(--vert-fonce); }
+    .btn.rouge:hover { background: var(--rouge-clair); }
+    .btn.whatsapp:hover { background: #1ebe5a; }
+    table.grille thead th.mois:hover { background: var(--vert-clair); }
+    button.case:not(.hors):hover { border-color: var(--vert); }
+  }
   html { font-size: 18px; }
   body {
     margin: 0; background: var(--fond); color: var(--texte);
     font-family: "Segoe UI", Roboto, Arial, sans-serif; line-height: 1.45;
   }
   header.top {
-    background: var(--vert); color: #fff; padding: 14px 16px;
+    background: var(--vert); color: #fff;
+    padding: calc(14px + env(safe-area-inset-top, 0px)) calc(16px + env(safe-area-inset-right, 0px)) 14px calc(16px + env(safe-area-inset-left, 0px));
     display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
   }
   header.top h1 { margin: 0; font-size: 1.35rem; flex: 1; min-width: 200px; }
   header.top .sous { font-size: .85rem; opacity: .9; font-weight: normal; display: block; }
   nav.onglets {
-    display: flex; gap: 6px; padding: 10px 16px 0; background: var(--vert);
+    display: flex; gap: 6px; padding: 10px calc(16px + env(safe-area-inset-right, 0px)) 0 calc(16px + env(safe-area-inset-left, 0px)); background: var(--vert);
+    overscroll-behavior-x: contain; scrollbar-width: none;
     overflow-x: auto;
   }
+  nav.onglets::-webkit-scrollbar { display: none; }
   nav.onglets button {
     border: 0; background: rgba(255,255,255,.15); color: #fff; font-size: 1rem;
     padding: 12px 18px; border-radius: 10px 10px 0 0; cursor: pointer; white-space: nowrap;
     font-weight: 600;
   }
   nav.onglets button[aria-selected="true"] { background: var(--fond); color: var(--vert-fonce); }
-  main { max-width: 1200px; margin: 0 auto; padding: 18px 16px 60px; }
+  main { max-width: 1200px; margin: 0 auto; padding: 18px calc(16px + env(safe-area-inset-right, 0px)) calc(60px + env(safe-area-inset-bottom, 0px)) calc(16px + env(safe-area-inset-left, 0px)); }
   section.page { display: none; }
   section.page.active { display: block; }
   h2 { font-size: 1.3rem; margin: 0 0 12px; }
@@ -58,13 +91,9 @@
     border: 2px solid var(--vert); background: #fff; color: var(--vert-fonce);
     display: inline-flex; align-items: center; gap: 8px; min-height: 48px;
   }
-  .btn:hover { background: var(--vert-clair); }
   .btn.plein { background: var(--vert); color: #fff; }
-  .btn.plein:hover { background: var(--vert-fonce); }
   .btn.rouge { border-color: var(--rouge); color: var(--rouge); }
-  .btn.rouge:hover { background: var(--rouge-clair); }
   .btn.whatsapp { background: #25d366; border-color: #25d366; color: #073b1c; }
-  .btn.whatsapp:hover { background: #1ebe5a; }
   .btn.petit { padding: 6px 12px; min-height: 38px; font-size: .9rem; }
   .btn.grand { font-size: 1.1rem; padding: 16px 22px; }
   input, select {
@@ -87,14 +116,13 @@
   .barre > div { height: 100%; background: var(--vert); }
 
   /* Grille des cotisations */
-  .grille-wrap { overflow-x: auto; border: 1px solid var(--bord); border-radius: 12px; background: #fff; }
+  .grille-wrap { overflow-x: auto; overscroll-behavior-x: contain; border: 1px solid var(--bord); border-radius: 12px; background: #fff; }
   table.grille { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 900px; }
   table.grille th, table.grille td { border-bottom: 1px solid var(--gris-clair); padding: 4px; text-align: center; }
   table.grille thead th {
     background: var(--gris-clair); font-size: .85rem; padding: 10px 4px; position: sticky; top: 0;
   }
   table.grille thead th.mois { cursor: pointer; }
-  table.grille thead th.mois:hover { background: var(--vert-clair); }
   table.grille thead th.courant { background: var(--vert); color: #fff; }
   table.grille th.nom, table.grille td.nom {
     text-align: left; position: sticky; left: 0; background: #fff; z-index: 1;
@@ -109,7 +137,6 @@
     width: 100%; min-width: 50px; height: 46px; border-radius: 8px; border: 2px dashed var(--bord);
     background: #fff; cursor: pointer; font-size: .85rem; font-weight: 700; color: var(--gris);
   }
-  button.case:hover { border-color: var(--vert); }
   button.case.paye { background: var(--vert); border: 2px solid var(--vert); color: #fff; font-size: 1.1rem; }
   button.case.partiel { background: var(--orange-clair); border: 2px solid var(--orange); color: var(--orange); }
   button.case.plus { background: var(--vert-clair); border: 2px solid var(--vert); color: var(--vert-fonce); }
@@ -146,6 +173,16 @@
     box-shadow: 0 20px 50px rgba(0,0,0,.3); color: var(--texte);
   }
   dialog::backdrop { background: rgba(16,24,40,.55); }
+  dialog { max-height: calc(100dvh - 32px); overflow-y: auto; overscroll-behavior: contain; }
+  dialog[open] { animation: dlg-in 200ms var(--ease-out); }
+  dialog[open]::backdrop { animation: fond-in 200ms ease; }
+  @keyframes dlg-in { from { opacity: 0; transform: scale(0.96); } }
+  @keyframes fond-in { from { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    dialog[open] { animation: fond-in 150ms ease; }
+    .btn:active, button.case:active, nav.onglets button:active { transform: none; }
+    .toast { transform: translate(-50%, 0) !important; }
+  }
   dialog h3 { margin: 0 0 4px; font-size: 1.2rem; }
   dialog .choix { display: grid; gap: 10px; margin-top: 16px; }
   dialog .choix .btn { justify-content: center; width: 100%; }
@@ -155,11 +192,11 @@
   .vide { text-align: center; padding: 30px 10px; color: var(--gris); }
   .alerte { background: var(--orange-clair); border: 1px solid #f5c26b; border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; }
   .toast {
-    position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--texte); color: #fff;
-    padding: 12px 20px; border-radius: 10px; font-weight: 600; z-index: 100; opacity: 0; transition: opacity .2s;
+    position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 8px); background: var(--texte); color: #fff;
+    padding: 12px 20px; border-radius: 10px; font-weight: 600; z-index: 100; opacity: 0; transition: opacity 200ms ease, transform 200ms var(--ease-out);
     pointer-events: none; max-width: calc(100vw - 32px); text-align: center;
   }
-  .toast.visible { opacity: 1; }
+  .toast.visible { opacity: 1; transform: translate(-50%, 0); }
 
   @media (max-width: 600px) {
     html { font-size: 16px; }
@@ -221,7 +258,7 @@
     <div class="carte">
       <h2>Ajouter un membre</h2>
       <form id="form-membre" class="ligne">
-        <input id="nouveau-nom" placeholder="Nom et prénom" required style="flex:1; min-width:220px">
+        <input id="nouveau-nom" placeholder="Nom et prénom" required autocapitalize="words" autocomplete="off" enterkeyhint="done" style="flex:1; min-width:220px">
         <button class="btn plein" type="submit">➕ Ajouter</button>
       </form>
       <p class="aide">Astuce : vous pouvez coller une liste de noms (un nom par ligne) pour tous les ajouter en une fois.</p>
@@ -269,7 +306,7 @@
       <h2>L'association</h2>
       <form id="form-reglages">
         <label class="champ"><span>Nom de l'association</span><input id="r-nom" placeholder="Ex : Association des jeunes du quartier"></label>
-        <label class="champ"><span>Montant de la cotisation par mois</span><input id="r-montant" type="number" min="0" step="50" inputmode="numeric"></label>
+        <label class="champ"><span>Montant de la cotisation par mois</span><input id="r-montant" enterkeyhint="done" type="number" min="0" step="50" inputmode="numeric"></label>
         <label class="champ"><span>Monnaie</span><input id="r-devise" placeholder="FCFA"></label>
         <label class="champ"><span>Nom du trésorier</span><input id="r-tresorier" placeholder="Votre nom"></label>
         <button class="btn plein" type="submit">💾 Enregistrer</button>
@@ -295,7 +332,7 @@
   <div class="choix">
     <button class="btn plein grand" id="dp-paye"></button>
     <div class="ligne">
-      <input id="dp-montant" type="number" min="0" step="50" inputmode="numeric" placeholder="Autre montant" style="flex:1; min-width:140px">
+      <input id="dp-montant" type="number" min="0" step="50" inputmode="numeric" enterkeyhint="done" placeholder="Autre montant" style="flex:1; min-width:140px">
       <button class="btn" id="dp-autre">Valider ce montant</button>
     </div>
     <button class="btn rouge" id="dp-efface">✗ N'a pas payé</button>
