@@ -1,0 +1,103 @@
+# Fabrique l'application Android (APK) à chaque mise à jour,
+# puis la publie dans « Releases » avec un lien de téléchargement direct :
+# https://github.com/Oden225/Caisse-Webe-Grin/releases/latest/download/Ma-Cotisation.apk
+name: Application Android (APK)
+
+on:
+  push:
+    branches: [ccr-08a29392-5s1sts]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apk
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Installer Capacitor
+        run: npm ci
+
+      - name: Préparer les fichiers de l'application
+        run: |
+          rm -rf www && mkdir -p www/lib
+          cp -r index.html css js icones www/
+          cp lib/*.js www/lib/
+          cp node_modules/@capacitor/core/dist/capacitor.js www/lib/capacitor.js
+          sed -i 's|<script src="lib/jspdf.umd.min.js"></script>|<script src="lib/capacitor.js"></script>\n  <script src="lib/jspdf.umd.min.js"></script>|' www/index.html
+          grep -q 'lib/capacitor.js' www/index.html
+
+      - name: Créer le projet Android (icône, écran de lancement, version)
+        run: |
+          npx cap add android
+          RES=android/app/src/main/res
+          find $RES -name 'splash.png' -delete
+          cp -r android-res/. $RES/
+          sed -i "s/versionCode 1$/versionCode ${{ github.run_number }}/" android/app/build.gradle
+          sed -i "s/versionName \"1.0\"/versionName \"1.${{ github.run_number }}\"/" android/app/build.gradle
+          grep -n "versionCode\|versionName" android/app/build.gradle
+          npx cap sync android
+
+      - name: Construire l'APK
+        working-directory: android
+        run: ./gradlew assembleRelease --no-daemon --stacktrace
+
+      # Clé de signature : secrets du dépôt ANDROID_KEYSTORE_BASE64 et ANDROID_KEYSTORE_PASSWORD
+      # (alias « macotisation »). Sans eux, une clé temporaire est créée : l'APK s'installe,
+      # mais Android refusera de l'installer par-dessus une version signée avec une autre clé.
+      - name: Signer l'APK
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ] && [ -n "$KEYSTORE_PASSWORD" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > cle.jks
+            echo "Signature avec la clé permanente du dépôt"
+          else
+            KEYSTORE_PASSWORD="$(openssl rand -hex 16)"
+            keytool -genkeypair -keystore cle.jks -alias macotisation -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass "$KEYSTORE_PASSWORD" -keypass "$KEYSTORE_PASSWORD" -dname "CN=Ma Cotisation, O=Groupe Webe Grin, C=CI"
+            echo "::warning::Aucune clé permanente configurée : APK signé avec une clé temporaire."
+          fi
+          export KEYSTORE_PASSWORD
+          BT="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)"
+          "$BT/zipalign" -p -f 4 android/app/build/outputs/apk/release/app-release-unsigned.apk aligne.apk
+          "$BT/apksigner" sign --ks cle.jks --ks-key-alias macotisation \
+            --ks-pass env:KEYSTORE_PASSWORD --key-pass env:KEYSTORE_PASSWORD --out Ma-Cotisation.apk aligne.apk
+          "$BT/apksigner" verify --print-certs Ma-Cotisation.apk
+          rm -f cle.jks
+
+      - name: Garder l'APK dans les résultats de la tâche
+        uses: actions/upload-artifact@v4
+        with:
+          name: Ma-Cotisation-apk
+          path: Ma-Cotisation.apk
+
+      - name: Publier le téléchargement
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-${{ github.run_number }}
+          name: Ma Cotisation 1.${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          make_latest: true
+          files: Ma-Cotisation.apk
+          body: |
+            Application Android **Ma Cotisation** (version 1.${{ github.run_number }}).
+
+            Sur le téléphone : télécharger **Ma-Cotisation.apk**, l'ouvrir, autoriser l'installation, puis **Installer**.
+            Pour mettre à jour, installer simplement la nouvelle version par-dessus : les données sont conservées.

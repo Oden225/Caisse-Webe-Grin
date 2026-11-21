@@ -762,6 +762,10 @@ function verrouiller() {
 
 /* ================= Démarrage ================= */
 function demarrer() {
+  if (NATIF) {
+    Natif.StatusBar.setBackgroundColor({ color: "#173B61" }).catch(() => {});
+    Natif.StatusBar.setStyle({ style: "DARK" }).catch(() => {});
+  }
   enregistrer();
   history.replaceState({ pile }, "");
   rendre(true);
@@ -777,6 +781,6 @@ function demarrer() {
 }
 if (S.asso.pin) verrouiller(); else demarrer();
 
-if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
+if (!NATIF && "serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
   navigator.serviceWorker.register("sw.js").catch(() => {});
 }

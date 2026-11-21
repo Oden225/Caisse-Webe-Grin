@@ -1,5 +1,5 @@
 /* Ma Cotisation : fonctionnement hors connexion (cache des fichiers de l'application) */
-const CACHE = "ma-cotisation-v2-1";
+const CACHE = "ma-cotisation-v2-2";
 const FICHIERS = [
   "./", "./index.html", "./css/app.css", "./manifest.webmanifest",
   "./js/donnees.js", "./js/docx.js", "./js/rapports.js", "./js/app.js",

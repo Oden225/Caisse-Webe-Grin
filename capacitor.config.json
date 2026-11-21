@@ -1,0 +1,9 @@
+{
+  "appId": "ci.webegrin.macotisation",
+  "appName": "Ma Cotisation",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false,
+    "backgroundColor": "#F5F7FA"
+  }
+}

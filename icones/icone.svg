@@ -1,12 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <rect width="512" height="512" rx="112" fill="#173B61"/>
-  <ellipse cx="236" cy="352" rx="128" ry="40" fill="#0F2B49"/>
-  <rect x="108" y="300" width="256" height="52" fill="#E9B44C"/>
-  <ellipse cx="236" cy="352" rx="128" ry="40" fill="#E9B44C"/>
-  <ellipse cx="236" cy="300" rx="128" ry="40" fill="#F6CD6E"/>
-  <rect x="108" y="236" width="256" height="64" fill="#E9B44C"/>
-  <ellipse cx="236" cy="236" rx="128" ry="40" fill="#F6CD6E"/>
-  <ellipse cx="236" cy="236" rx="84" ry="22" fill="none" stroke="#D99A32" stroke-width="10"/>
-  <circle cx="356" cy="166" r="82" fill="#16A36A"/>
-  <path d="M318 168l26 26 52-56" fill="none" stroke="#fff" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="112.0" y="112.0" width="78.7" height="78.7" rx="18.9" fill="#2BC183"/>
+  <path d="M133.2 152.2l13.0 13.0l23.4 -25.1" fill="none" stroke="#fff" stroke-width="8.7" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="216.6" y="112.0" width="78.7" height="78.7" rx="18.9" fill="#2BC183"/>
+  <path d="M237.8 152.2l13.0 13.0l23.4 -25.1" fill="none" stroke="#fff" stroke-width="8.7" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="321.3" y="112.0" width="78.7" height="78.7" rx="18.9" fill="#2BC183"/>
+  <path d="M342.5 152.2l13.0 13.0l23.4 -25.1" fill="none" stroke="#fff" stroke-width="8.7" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="112.0" y="216.6" width="78.7" height="78.7" rx="18.9" fill="#2BC183"/>
+  <path d="M133.2 256.9l13.0 13.0l23.4 -25.1" fill="none" stroke="#fff" stroke-width="8.7" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="216.6" y="216.6" width="78.7" height="78.7" rx="18.9" fill="#2BC183"/>
+  <path d="M237.8 256.9l13.0 13.0l23.4 -25.1" fill="none" stroke="#fff" stroke-width="8.7" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="321.3" y="216.6" width="78.7" height="78.7" rx="18.9" fill="#F2B24C"/>
+  <rect x="112.0" y="321.3" width="78.7" height="78.7" rx="18.9" fill="#2BC183"/>
+  <path d="M133.2 361.5l13.0 13.0l23.4 -25.1" fill="none" stroke="#fff" stroke-width="8.7" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="219.4" y="324.0" width="73.2" height="73.2" rx="18.9" fill="none" stroke="#7F9BBA" stroke-width="5.5"/>
+  <rect x="324.0" y="324.0" width="73.2" height="73.2" rx="18.9" fill="none" stroke="#7F9BBA" stroke-width="5.5"/>
 </svg>

@@ -291,7 +291,27 @@ function messageRapport(cfg) {
 }
 
 /* ---------- Partage ---------- */
+/* Dans l'application Android (APK), on passe par les modules natifs de Capacitor */
+const CAP = window.capacitorExports;
+const NATIF = !!(CAP && CAP.Capacitor && CAP.Capacitor.isNativePlatform && CAP.Capacitor.isNativePlatform());
+const Natif = NATIF ? { Share: CAP.registerPlugin("Share"), Filesystem: CAP.registerPlugin("Filesystem"), StatusBar: CAP.registerPlugin("StatusBar") } : null;
+function blobEnBase64(blob) {
+  return new Promise((ok, ko) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(",")[1]); r.onerror = ko; r.readAsDataURL(blob); });
+}
+const estAnnulation = (e) => /cancel|annul/i.test((e && e.message) || "");
+
 async function partagerFichier(blob, nom, type, titre) {
+  if (NATIF) {
+    try {
+      const { uri } = await Natif.Filesystem.writeFile({ path: nom, data: await blobEnBase64(blob), directory: "CACHE" });
+      await Natif.Share.share({ title: titre || nom, files: [uri], dialogTitle: "Envoyer le fichier" });
+      return "partage";
+    } catch (e) {
+      if (estAnnulation(e)) return "annule";
+      toast("Partage impossible : " + ((e && e.message) || "erreur inconnue"));
+      return "erreur";
+    }
+  }
   const fichier = new File([blob], nom, { type });
   if (navigator.canShare && navigator.canShare({ files: [fichier] })) {
     try { await navigator.share({ files: [fichier], title: titre || nom }); return "partage"; }
@@ -307,6 +327,11 @@ function telecharger(blob, nom) {
   setTimeout(() => URL.revokeObjectURL(url), 5000);
 }
 async function partagerTexte(texte) {
+  if (NATIF) {
+    try { await Natif.Share.share({ text: texte, dialogTitle: "Envoyer le message" }); }
+    catch (e) { if (!estAnnulation(e)) toast("Partage impossible : " + ((e && e.message) || "erreur inconnue")); }
+    return;
+  }
   if (navigator.share && matchMedia("(pointer: coarse)").matches) {
     try { await navigator.share({ text: texte }); return; } catch (e) { if (e.name === "AbortError") return; }
   }

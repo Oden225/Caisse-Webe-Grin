@@ -6,7 +6,14 @@ Elle fonctionne sur téléphone Android (installable comme une application) et s
 
 ## Installer
 
-**Sur Android** (recommandé) : une fois le dossier publié sur un site (par exemple GitHub Pages), ouvrir le lien dans Chrome, puis menu ⋮ → **Ajouter à l'écran d'accueil** / **Installer l'application**. L'icône « Cotisation » apparaît avec les autres applications et fonctionne ensuite hors connexion.
+**Sur Android (application APK)** : télécharger
+https://github.com/Oden225/Caisse-Webe-Grin/releases/latest/download/Ma-Cotisation.apk
+sur le téléphone, l'ouvrir, autoriser l'installation depuis cette source si Android le demande, puis **Installer**.
+Ne pas désinstaller l'application sans avoir fait une copie de sauvegarde.
+
+L'APK est fabriqué automatiquement par GitHub Actions (`.github/workflows/apk.yml`) à chaque mise à jour de la branche, avec Capacitor.
+
+**Clé de signature.** Pour qu'une nouvelle version s'installe par-dessus l'ancienne (sans perdre les données), toutes les versions doivent être signées avec la même clé. Elle se range dans deux secrets du dépôt (Settings → Secrets and variables → Actions) : `ANDROID_KEYSTORE_BASE64` (le fichier .jks en base64, alias `macotisation`) et `ANDROID_KEYSTORE_PASSWORD`. Sans ces secrets, chaque APK est signé avec une clé temporaire : il s'installe, mais une mise à jour demandera de faire une copie de sauvegarde, désinstaller, réinstaller puis reprendre la copie.
 
 **Sur ordinateur** : copier tout le dossier puis double-cliquer sur `index.html` (Chrome ou Edge).
 
@@ -43,4 +50,5 @@ Paramètres → **Faire une copie** (une fois par mois). Sur Android, la copie p
 - `js/docx.js` : création des fichiers Word sans dépendance
 - `js/app.js` : écrans et navigation
 - `lib/` : jsPDF (création des PDF)
-- `manifest.webmanifest`, `sw.js`, `icones/` : installation sur Android et fonctionnement hors connexion
+- `manifest.webmanifest`, `sw.js`, `icones/` : version web installable et hors connexion
+- `package.json`, `capacitor.config.json`, `android-res/`, `.github/workflows/apk.yml` : fabrication de l'APK Android

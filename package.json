@@ -1,0 +1,16 @@
+{
+  "name": "ma-cotisation",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Application Android de suivi des cotisations (Capacitor)",
+  "dependencies": {
+    "@capacitor/android": "6.2.3",
+    "@capacitor/core": "6.2.3",
+    "@capacitor/filesystem": "6.0.4",
+    "@capacitor/share": "6.0.4",
+    "@capacitor/status-bar": "6.0.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "6.2.3"
+  }
+}
